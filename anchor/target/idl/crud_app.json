@@ -1,0 +1,202 @@
+{
+  "address": "Bfs5UjX5queZULKZbq8PiimwybgtyQ6Zw1TtDLssRWLo",
+  "metadata": {
+    "name": "crud_app",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "journal_entry_create",
+      "discriminator": [
+        241,
+        121,
+        57,
+        164,
+        20,
+        126,
+        86,
+        115
+      ],
+      "accounts": [
+        {
+          "name": "journal_entry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "title"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "journal_entry_delete",
+      "discriminator": [
+        111,
+        196,
+        201,
+        108,
+        226,
+        88,
+        28,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "journal_entry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "title"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "_title",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "journal_entry_update",
+      "discriminator": [
+        92,
+        158,
+        140,
+        90,
+        62,
+        204,
+        147,
+        146
+      ],
+      "accounts": [
+        {
+          "name": "journal_entry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "title"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "JournalEntry",
+      "discriminator": [
+        255,
+        74,
+        177,
+        178,
+        227,
+        112,
+        46,
+        152
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "JournalEntry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "created_at",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}
