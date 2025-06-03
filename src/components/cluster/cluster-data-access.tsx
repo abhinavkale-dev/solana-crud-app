@@ -1,8 +1,9 @@
 'use client'
 
 import { clusterApiUrl, Connection } from '@solana/web3.js'
-import { atom, useAtomValue, useSetAtom } from 'jotai'
-import { atomWithStorage } from 'jotai/utils'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import type { StateCreator } from 'zustand'
 import { createContext, ReactNode, useContext } from 'react'
 
 export interface SolanaCluster {
@@ -36,23 +37,41 @@ export const defaultClusters: SolanaCluster[] = [
   },
 ]
 
-const clusterAtom = atomWithStorage<SolanaCluster>('solana-cluster', defaultClusters[0])
-const clustersAtom = atomWithStorage<SolanaCluster[]>('solana-clusters', defaultClusters)
+interface ClusterStore {
+  cluster: SolanaCluster
+  clusters: SolanaCluster[]
+  setCluster: (cluster: SolanaCluster) => void
+  setClusters: (clusters: SolanaCluster[]) => void
+  addCluster: (cluster: SolanaCluster) => void
+  deleteCluster: (cluster: SolanaCluster) => void
+}
 
-const activeClustersAtom = atom<SolanaCluster[]>((get) => {
-  const clusters = get(clustersAtom)
-  const cluster = get(clusterAtom)
-  return clusters.map((item) => ({
-    ...item,
-    active: item.name === cluster.name,
-  }))
-})
-
-const activeClusterAtom = atom<SolanaCluster>((get) => {
-  const clusters = get(activeClustersAtom)
-
-  return clusters.find((item) => item.active) || clusters[0]
-})
+const useClusterStore = create<ClusterStore>()(
+  persist(
+    (set, get): ClusterStore => ({
+      cluster: defaultClusters[0],
+      clusters: defaultClusters,
+      setCluster: (cluster: SolanaCluster) => set({ cluster }),
+      setClusters: (clusters: SolanaCluster[]) => set({ clusters }),
+      addCluster: (cluster: SolanaCluster) => {
+        try {
+          new Connection(cluster.endpoint)
+          const { clusters } = get()
+          set({ clusters: [...clusters, cluster] })
+        } catch (err) {
+          console.error(`${err}`)
+        }
+      },
+      deleteCluster: (cluster: SolanaCluster) => {
+        const { clusters } = get()
+        set({ clusters: clusters.filter((item: SolanaCluster) => item.name !== cluster.name) })
+      },
+    }),
+    {
+      name: 'solana-cluster-storage',
+    }
+  )
+)
 
 export interface ClusterProviderContext {
   cluster: SolanaCluster
@@ -67,26 +86,19 @@ export interface ClusterProviderContext {
 const Context = createContext<ClusterProviderContext>({} as ClusterProviderContext)
 
 export function ClusterProvider({ children }: { children: ReactNode }) {
-  const cluster = useAtomValue(activeClusterAtom)
-  const clusters = useAtomValue(activeClustersAtom)
-  const setCluster = useSetAtom(clusterAtom)
-  const setClusters = useSetAtom(clustersAtom)
+  const { cluster, clusters, setCluster, addCluster, deleteCluster } = useClusterStore()
+
+  const activeClusters = clusters.map((item: SolanaCluster) => ({
+    ...item,
+    active: item.name === cluster.name,
+  })).sort((a: SolanaCluster, b: SolanaCluster) => (a.name > b.name ? 1 : -1))
 
   const value: ClusterProviderContext = {
     cluster,
-    clusters: clusters.sort((a, b) => (a.name > b.name ? 1 : -1)),
-    addCluster: (cluster: SolanaCluster) => {
-      try {
-        new Connection(cluster.endpoint)
-        setClusters([...clusters, cluster])
-      } catch (err) {
-        console.error(`${err}`)
-      }
-    },
-    deleteCluster: (cluster: SolanaCluster) => {
-      setClusters(clusters.filter((item) => item.name !== cluster.name))
-    },
-    setCluster: (cluster: SolanaCluster) => setCluster(cluster),
+    clusters: activeClusters,
+    addCluster,
+    deleteCluster,
+    setCluster,
     getExplorerUrl: (path: string) => `https://explorer.solana.com/${path}${getClusterUrlParam(cluster)}`,
   }
   return <Context.Provider value={value}>{children}</Context.Provider>

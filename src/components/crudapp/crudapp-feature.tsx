@@ -7,7 +7,9 @@ import { CrudAppCreate, CrudAppList } from './crudapp-ui'
 
 function ellipsify(str: string, len = 4) {
   if (str.length > 30) {
-    return `${str.substring(0, len)}...${str.substring(str.length - len, str.length)}`
+    const firstPart = str.substring(0, len)
+    const lastPart = str.substring(str.length - len, str.length)
+    return `${firstPart}...${lastPart}`
   }
   return str
 }
