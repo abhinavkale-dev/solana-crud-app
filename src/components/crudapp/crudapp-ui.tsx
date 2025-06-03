@@ -102,7 +102,7 @@ export function CrudAppCard({ account }: { account: PublicKey }) {
     if (editDescription.trim().length > 0) {
       try {
         await updateJournalEntry.mutateAsync({ 
-          title: title, // Keep original title for account derivation
+          title: title,
           description: editDescription.trim() 
         })
         setIsEditing(false)
